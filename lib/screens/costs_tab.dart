@@ -13,9 +13,7 @@ class CostsTab extends ConsumerWidget {
     final costsAsync = ref.watch(costsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Costs'),
-      ),
+      appBar: AppBar(title: const Text('Costs')),
       body: costsAsync.when(
         data: (costs) {
           if (costs.isEmpty) {
@@ -89,43 +87,49 @@ class CostItem extends ConsumerWidget {
           },
           contentPadding: const EdgeInsets.all(16),
           leading: CircleAvatar(
-          backgroundColor: Color(cost.category.colorCode),
-          child: Icon(getIcon(cost.category.iconCode), color: Colors.white),
-        ),
-        title: Text(
-          cost.merchant.name,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 16),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(cost.category.name),
-            const SizedBox(height: 4),
-            Text(dateFormatter.format(cost.date), style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              currencyFormatter.format(cost.amount),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.grey),
-              onPressed: () async {
-                final db = ref.read(databaseServiceProvider);
-                await db.deleteCost(cost.id);
-                ref.invalidate(costsProvider);
-              },
-            ),
-          ],
+            backgroundColor: Color(cost.category.colorCode),
+            child: Icon(getIcon(cost.category.iconCode), color: Colors.white),
+          ),
+          title: Text(
+            cost.merchant.name,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontSize: 16),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              Text(cost.category.name),
+              const SizedBox(height: 4),
+              Text(
+                dateFormatter.format(cost.date),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                currencyFormatter.format(cost.amount),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.grey),
+                onPressed: () async {
+                  final db = ref.read(databaseServiceProvider);
+                  await db.deleteCost(cost.id);
+                  ref.invalidate(costsProvider);
+                },
+              ),
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 }

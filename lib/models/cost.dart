@@ -28,7 +28,11 @@ class Cost {
 
   // Cost fromMap will be handled in the database service by performing a JOIN
   // or by passing in the retrieved Category and Merchant objects.
-  factory Cost.fromMap(Map<String, dynamic> map, Category category, Merchant merchant) {
+  factory Cost.fromMap(
+    Map<String, dynamic> map,
+    Category category,
+    Merchant merchant,
+  ) {
     return Cost(
       id: map['id'],
       amount: map['amount'],

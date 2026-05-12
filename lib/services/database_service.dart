@@ -19,11 +19,7 @@ class DatabaseService {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, dbName);
 
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDb,
-    );
+    return await openDatabase(path, version: 1, onCreate: _createDb);
   }
 
   Future<void> _createDb(Database db, int version) async {
@@ -61,13 +57,37 @@ class DatabaseService {
 
   Future<void> _insertInitialCategories(Database db) async {
     final initialCategories = [
-      Category(id: 'cat_groceries', name: 'Groceries', iconCode: 'shopping_cart', colorCode: 0xFF4CAF50),
-      Category(id: 'cat_transport', name: 'Transport', iconCode: 'directions_car', colorCode: 0xFF2196F3),
-      Category(id: 'cat_entertainment', name: 'Entertainment', iconCode: 'movie', colorCode: 0xFF9C27B0),
-      Category(id: 'cat_bills', name: 'Bills', iconCode: 'receipt', colorCode: 0xFFF44336),
+      Category(
+        id: 'cat_groceries',
+        name: 'Groceries',
+        iconCode: 'shopping_cart',
+        colorCode: 0xFF4CAF50,
+      ),
+      Category(
+        id: 'cat_transport',
+        name: 'Transport',
+        iconCode: 'directions_car',
+        colorCode: 0xFF2196F3,
+      ),
+      Category(
+        id: 'cat_entertainment',
+        name: 'Entertainment',
+        iconCode: 'movie',
+        colorCode: 0xFF9C27B0,
+      ),
+      Category(
+        id: 'cat_bills',
+        name: 'Bills',
+        iconCode: 'receipt',
+        colorCode: 0xFFF44336,
+      ),
     ];
     for (var category in initialCategories) {
-      await db.insert('categories', category.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      await db.insert(
+        'categories',
+        category.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     }
   }
 
@@ -80,12 +100,21 @@ class DatabaseService {
 
   Future<void> insertCategory(Category category) async {
     final database = await db;
-    await database.insert('categories', category.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await database.insert(
+      'categories',
+      category.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> updateCategory(Category category) async {
     final database = await db;
-    await database.update('categories', category.toMap(), where: 'id = ?', whereArgs: [category.id]);
+    await database.update(
+      'categories',
+      category.toMap(),
+      where: 'id = ?',
+      whereArgs: [category.id],
+    );
   }
 
   // Merchants
@@ -97,17 +126,31 @@ class DatabaseService {
 
   Future<void> insertMerchant(Merchant merchant) async {
     final database = await db;
-    await database.insert('merchants', merchant.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await database.insert(
+      'merchants',
+      merchant.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> updateMerchant(Merchant merchant) async {
     final database = await db;
-    await database.update('merchants', merchant.toMap(), where: 'id = ?', whereArgs: [merchant.id]);
+    await database.update(
+      'merchants',
+      merchant.toMap(),
+      where: 'id = ?',
+      whereArgs: [merchant.id],
+    );
   }
 
   Future<Merchant?> getMerchantByName(String name) async {
     final database = await db;
-    final maps = await database.query('merchants', where: 'name = ?', whereArgs: [name], limit: 1);
+    final maps = await database.query(
+      'merchants',
+      where: 'name = ?',
+      whereArgs: [name],
+      limit: 1,
+    );
     if (maps.isNotEmpty) {
       return Merchant.fromMap(maps.first);
     }
@@ -149,21 +192,34 @@ class DatabaseService {
 
   Future<void> insertCost(Cost cost) async {
     final database = await db;
-    await database.insert('costs', cost.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await database.insert(
+      'costs',
+      cost.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> insertCostsBatch(List<Cost> costs) async {
     final database = await db;
     final batch = database.batch();
     for (var cost in costs) {
-      batch.insert('costs', cost.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      batch.insert(
+        'costs',
+        cost.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     }
     await batch.commit(noResult: true);
   }
 
   Future<void> updateCost(Cost cost) async {
     final database = await db;
-    await database.update('costs', cost.toMap(), where: 'id = ?', whereArgs: [cost.id]);
+    await database.update(
+      'costs',
+      cost.toMap(),
+      where: 'id = ?',
+      whereArgs: [cost.id],
+    );
   }
 
   Future<void> deleteCost(String id) async {

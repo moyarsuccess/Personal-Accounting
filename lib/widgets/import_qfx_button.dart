@@ -15,7 +15,8 @@ class ImportQfxButton extends ConsumerStatefulWidget {
   ConsumerState<ImportQfxButton> createState() => _ImportQfxButtonState();
 }
 
-class _ImportQfxButtonState extends ConsumerState<ImportQfxButton> with SingleTickerProviderStateMixin {
+class _ImportQfxButtonState extends ConsumerState<ImportQfxButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _expandAnimation;
   bool _isOpen = false;
@@ -24,9 +25,10 @@ class _ImportQfxButtonState extends ConsumerState<ImportQfxButton> with SingleTi
   void initState() {
     super.initState();
     _controller = AnimationController(
-        value: _isOpen ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 250),
-        vsync: this);
+      value: _isOpen ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    );
     _expandAnimation = CurvedAnimation(
       curve: Curves.fastOutSlowIn,
       reverseCurve: Curves.easeOutQuad,
@@ -55,42 +57,49 @@ class _ImportQfxButtonState extends ConsumerState<ImportQfxButton> with SingleTi
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['qfx', 'ofx', 'txt', 'xml'], 
+        allowedExtensions: ['qfx', 'ofx', 'txt', 'xml'],
       );
 
       if (result != null && result.files.single.path != null) {
         final file = File(result.files.single.path!);
         final contents = await file.readAsString();
-                
-       await _parseAndInsertQfx(contents, ref);
-       if (context.mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Successfully imported costs.')));
-       }
+
+        await _parseAndInsertQfx(contents, ref);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Successfully imported costs.')),
+          );
+        }
       }
     } catch (e) {
       if (context.mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to import QFX: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to import QFX: $e')));
       }
     }
   }
 
   Future<int> _parseAndInsertQfx(String contents, WidgetRef ref) async {
     final db = ref.read(databaseServiceProvider);
-    
+
     // Simple QFX/OFX STMTTRN parser
     final trnRegex = RegExp(r'<STMTTRN>([\s\S]*?)</STMTTRN>');
     final amtRegex = RegExp(r'<TRNAMT>([^<]+)');
     final nameRegex = RegExp(r'<NAME>([^<]+)');
-    final dateRegex = RegExp(r'<DTPOSTED>([^<]+)'); 
+    final dateRegex = RegExp(r'<DTPOSTED>([^<]+)');
 
     final matches = trnRegex.allMatches(contents);
-    
+
     final categories = await db.getCategories();
-    final defaultCat = categories.firstWhere((c) => c.name == 'Bills', orElse: () => categories.first);
+    final defaultCat = categories.firstWhere(
+      (c) => c.name == 'Bills',
+      orElse: () => categories.first,
+    );
     final existingCosts = await db.getCosts();
 
     int count = 0;
-    
+
     for (final match in matches) {
       final block = match.group(1) ?? '';
       final amtMatch = amtRegex.firstMatch(block);
@@ -103,11 +112,11 @@ class _ImportQfxButtonState extends ConsumerState<ImportQfxButton> with SingleTi
         final dateStr = dateMatch?.group(1)?.trim() ?? '';
 
         double amount = double.tryParse(amountStr ?? '0') ?? 0;
-        
+
         // QFX expenses are negative. Ignore positive deposits.
         if (amount < 0) {
           amount = amount.abs();
-          
+
           DateTime date = DateTime.now();
           if (dateStr.length >= 8) {
             final y = int.tryParse(dateStr.substring(0, 4)) ?? date.year;
@@ -116,12 +125,14 @@ class _ImportQfxButtonState extends ConsumerState<ImportQfxButton> with SingleTi
             date = DateTime(y, m, d);
           }
 
-          final isDuplicate = existingCosts.any((c) =>
-             c.amount == amount &&
-             c.date.year == date.year &&
-             c.date.month == date.month &&
-             c.date.day == date.day &&
-             c.merchant.name.toLowerCase() == nameStr.toLowerCase());
+          final isDuplicate = existingCosts.any(
+            (c) =>
+                c.amount == amount &&
+                c.date.year == date.year &&
+                c.date.month == date.month &&
+                c.date.day == date.day &&
+                c.merchant.name.toLowerCase() == nameStr.toLowerCase(),
+          );
 
           if (!isDuplicate) {
             var merchant = await db.getMerchantByName(nameStr);
@@ -137,7 +148,7 @@ class _ImportQfxButtonState extends ConsumerState<ImportQfxButton> with SingleTi
               category: defaultCat,
               merchant: merchant,
             );
-            
+
             await db.insertCost(cost);
             existingCosts.add(cost);
             count++;
@@ -145,7 +156,7 @@ class _ImportQfxButtonState extends ConsumerState<ImportQfxButton> with SingleTi
         }
       }
     }
-    
+
     ref.invalidate(costsProvider);
     ref.invalidate(merchantsProvider);
     return count;
@@ -159,12 +170,17 @@ class _ImportQfxButtonState extends ConsumerState<ImportQfxButton> with SingleTi
       children: [
         SizeTransition(
           sizeFactor: _expandAnimation,
-          axisAlignment: 1.0, 
+          axisAlignment: 1.0,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildAction('Import QFX', Icons.upload_file, 'import', () => _importQfx(context, ref)),
+              _buildAction(
+                'Import QFX',
+                Icons.upload_file,
+                'import',
+                () => _importQfx(context, ref),
+              ),
               const SizedBox(height: 16),
               _buildAction('Add Cost', Icons.add, 'add', () {
                 showDialog(
@@ -188,7 +204,12 @@ class _ImportQfxButtonState extends ConsumerState<ImportQfxButton> with SingleTi
     );
   }
 
-  Widget _buildAction(String label, IconData icon, String tag, VoidCallback action) {
+  Widget _buildAction(
+    String label,
+    IconData icon,
+    String tag,
+    VoidCallback action,
+  ) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,

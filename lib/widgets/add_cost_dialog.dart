@@ -43,11 +43,15 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a category')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select a category')));
       return;
     }
     if (_selectedMerchant == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a merchant')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select a merchant')));
       return;
     }
 
@@ -107,7 +111,8 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(textController.text.trim()),
+              onPressed: () =>
+                  Navigator.of(context).pop(textController.text.trim()),
               child: const Text('Add'),
             ),
           ],
@@ -120,16 +125,16 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
       // Check if it already exists to avoid duplicates
       Merchant? existingMerchant = await db.getMerchantByName(result);
       if (existingMerchant == null) {
-          final newMerchant = Merchant(id: const Uuid().v4(), name: result);
-          await db.insertMerchant(newMerchant);
-          ref.invalidate(merchantsProvider);
-          setState(() {
-            _selectedMerchant = newMerchant;
-          });
+        final newMerchant = Merchant(id: const Uuid().v4(), name: result);
+        await db.insertMerchant(newMerchant);
+        ref.invalidate(merchantsProvider);
+        setState(() {
+          _selectedMerchant = newMerchant;
+        });
       } else {
-         setState(() {
-            _selectedMerchant = existingMerchant;
-         });
+        setState(() {
+          _selectedMerchant = existingMerchant;
+        });
       }
     }
   }
@@ -153,7 +158,8 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(textController.text.trim()),
+              onPressed: () =>
+                  Navigator.of(context).pop(textController.text.trim()),
               child: const Text('Save'),
             ),
           ],
@@ -161,21 +167,28 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
       },
     );
 
-    if (result != null && result.isNotEmpty && result != _selectedMerchant!.name) {
+    if (result != null &&
+        result.isNotEmpty &&
+        result != _selectedMerchant!.name) {
       final db = ref.read(databaseServiceProvider);
       Merchant? existingMerchant = await db.getMerchantByName(result);
       if (existingMerchant == null) {
-         final updatedMerchant = Merchant(id: _selectedMerchant!.id, name: result);
-         await db.updateMerchant(updatedMerchant);
-         ref.invalidate(merchantsProvider);
-         ref.invalidate(costsProvider);
-         setState(() {
-           _selectedMerchant = updatedMerchant;
-         });
+        final updatedMerchant = Merchant(
+          id: _selectedMerchant!.id,
+          name: result,
+        );
+        await db.updateMerchant(updatedMerchant);
+        ref.invalidate(merchantsProvider);
+        ref.invalidate(costsProvider);
+        setState(() {
+          _selectedMerchant = updatedMerchant;
+        });
       } else {
-         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Merchant name already exists')));
-         }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Merchant name already exists')),
+          );
+        }
       }
     }
   }
@@ -198,7 +211,8 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(textController.text.trim()),
+              onPressed: () =>
+                  Navigator.of(context).pop(textController.text.trim()),
               child: const Text('Add'),
             ),
           ],
@@ -209,8 +223,8 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
     if (result != null && result.isNotEmpty) {
       final db = ref.read(databaseServiceProvider);
       final newCategory = Category(
-        id: const Uuid().v4(), 
-        name: result, 
+        id: const Uuid().v4(),
+        name: result,
         iconCode: 'shopping_bag', // use a default icon
         colorCode: 0xFF9E9E9E, // neutral grey default
       );
@@ -241,7 +255,8 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(textController.text.trim()),
+              onPressed: () =>
+                  Navigator.of(context).pop(textController.text.trim()),
               child: const Text('Save'),
             ),
           ],
@@ -249,11 +264,13 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
       },
     );
 
-    if (result != null && result.isNotEmpty && result != _selectedCategory!.name) {
+    if (result != null &&
+        result.isNotEmpty &&
+        result != _selectedCategory!.name) {
       final db = ref.read(databaseServiceProvider);
       final updatedCategory = Category(
-        id: _selectedCategory!.id, 
-        name: result, 
+        id: _selectedCategory!.id,
+        name: result,
         iconCode: _selectedCategory!.iconCode,
         colorCode: _selectedCategory!.colorCode,
       );
@@ -292,29 +309,36 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
                 // Amount Field
                 TextFormField(
                   controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Amount',
                     prefixIcon: Icon(Icons.attach_money),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Enter an amount';
-                    if (double.tryParse(value) == null) return 'Enter a valid number';
+                    if (value == null || value.isEmpty)
+                      return 'Enter an amount';
+                    if (double.tryParse(value) == null)
+                      return 'Enter a valid number';
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Merchant Row
                 merchantsAsync.when(
                   data: (merchants) {
                     // Update selected merchant if it was re-fetched but lost reference
-                    if (_selectedMerchant != null && !merchants.contains(_selectedMerchant)) {
-                        try{
-                          _selectedMerchant = merchants.firstWhere((m) => m.id == _selectedMerchant!.id);
-                        }catch(e){
-                          _selectedMerchant = null;
-                        }
+                    if (_selectedMerchant != null &&
+                        !merchants.contains(_selectedMerchant)) {
+                      try {
+                        _selectedMerchant = merchants.firstWhere(
+                          (m) => m.id == _selectedMerchant!.id,
+                        );
+                      } catch (e) {
+                        _selectedMerchant = null;
+                      }
                     }
 
                     return Row(
@@ -339,14 +363,17 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
                               });
                             },
                             validator: (val) {
-                               if (val == null) return 'Select a merchant';
-                               return null;
+                              if (val == null) return 'Select a merchant';
+                              return null;
                             },
                           ),
                         ),
                         IconButton(
                           onPressed: _showAddMerchantDialog,
-                          icon: const Icon(Icons.add_circle, color: Colors.blue),
+                          icon: const Icon(
+                            Icons.add_circle,
+                            color: Colors.blue,
+                          ),
                           tooltip: 'Add Merchant',
                         ),
                         if (_selectedMerchant != null)
@@ -367,12 +394,15 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
                 categoriesAsync.when(
                   data: (categories) {
                     // Update selected category if it was re-fetched but lost reference
-                    if (_selectedCategory != null && !categories.contains(_selectedCategory)) {
-                       try{
-                          _selectedCategory = categories.firstWhere((c) => c.id == _selectedCategory!.id);
-                        }catch(e){
-                          _selectedCategory = null;
-                        }
+                    if (_selectedCategory != null &&
+                        !categories.contains(_selectedCategory)) {
+                      try {
+                        _selectedCategory = categories.firstWhere(
+                          (c) => c.id == _selectedCategory!.id,
+                        );
+                      } catch (e) {
+                        _selectedCategory = null;
+                      }
                     }
 
                     return Row(
@@ -397,14 +427,17 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
                               });
                             },
                             validator: (val) {
-                               if (val == null) return 'Select a category';
-                               return null;
+                              if (val == null) return 'Select a category';
+                              return null;
                             },
                           ),
                         ),
                         IconButton(
                           onPressed: _showAddCategoryDialog,
-                          icon: const Icon(Icons.add_circle, color: Colors.blue),
+                          icon: const Icon(
+                            Icons.add_circle,
+                            color: Colors.blue,
+                          ),
                           tooltip: 'Add Category',
                         ),
                         if (_selectedCategory != null)
@@ -419,7 +452,7 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
                   loading: () => const CircularProgressIndicator(),
                   error: (err, stack) => Text('Error loading categories: $err'),
                 ),
-                
+
                 const SizedBox(height: 16),
                 // Date Row
                 Row(
@@ -439,7 +472,9 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
                 const SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: _submit,
-                  child: Text(widget.existingCost != null ? 'Save Changes' : 'Save Cost'),
+                  child: Text(
+                    widget.existingCost != null ? 'Save Changes' : 'Save Cost',
+                  ),
                 ),
               ],
             ),
