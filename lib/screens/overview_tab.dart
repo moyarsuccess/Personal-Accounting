@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:personal_accounting/models/cost.dart';
 import 'package:personal_accounting/screens/category_transactions_screen.dart';
 import 'package:personal_accounting/services/database_service.dart';
+import 'package:personal_accounting/utils/category_icons.dart';
 
 // Helper provider for selected month
 class SelectedMonthNotifier extends Notifier<DateTime> {
@@ -116,6 +117,7 @@ class OverviewTab extends ConsumerWidget {
     final Map<String, double> categoryTotals = {};
     final Map<String, Color> categoryColors = {};
     final Map<String, String> categoryIds = {};
+    final Map<String, String> categoryIconCodes = {};
     double totalMonthCost = 0;
 
     for (var cost in costs) {
@@ -123,6 +125,7 @@ class OverviewTab extends ConsumerWidget {
       categoryTotals[catName] = (categoryTotals[catName] ?? 0) + cost.amount;
       categoryColors[catName] = Color(cost.category.colorCode);
       categoryIds[catName] = cost.category.id;
+      categoryIconCodes[catName] = cost.category.iconCode;
       totalMonthCost += cost.amount;
     }
 
@@ -175,12 +178,13 @@ class OverviewTab extends ConsumerWidget {
             itemBuilder: (context, index) {
               final entry = sortedEntries[index];
               return ListTile(
-                leading: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: categoryColors[entry.key],
-                    shape: BoxShape.circle,
+                leading: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: categoryColors[entry.key],
+                  child: Icon(
+                    iconForCode(categoryIconCodes[entry.key] ?? 'label'),
+                    color: Colors.white,
+                    size: 18,
                   ),
                 ),
                 title: Text(entry.key),

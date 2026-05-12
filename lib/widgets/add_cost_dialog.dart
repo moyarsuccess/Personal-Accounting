@@ -6,6 +6,8 @@ import 'package:personal_accounting/models/cost.dart';
 import 'package:personal_accounting/models/merchant.dart';
 import 'package:personal_accounting/services/database_service.dart';
 import 'package:personal_accounting/services/supabase_service.dart';
+import 'package:personal_accounting/utils/category_icons.dart';
+import 'package:personal_accounting/widgets/category_editor_dialog.dart';
 import 'package:uuid/uuid.dart';
 
 class AddCostDialog extends ConsumerStatefulWidget {
@@ -195,93 +197,32 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
   }
 
   Future<void> _showAddCategoryDialog() async {
-    final textController = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Add Category'),
-          content: TextField(
-            controller: textController,
-            decoration: const InputDecoration(hintText: 'Category Name'),
-            autofocus: true,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () =>
-                  Navigator.of(context).pop(textController.text.trim()),
-              child: const Text('Add'),
-            ),
-          ],
-        );
-      },
-    );
+    final result = await showCategoryEditorDialog(context);
+    if (result == null) return;
 
-    if (result != null && result.isNotEmpty) {
-      final db = ref.read(supabaseServiceProvider);
-      final newCategory = Category(
-        id: const Uuid().v4(),
-        name: result,
-        iconCode: 'shopping_bag', // use a default icon
-        colorCode: 0xFF9E9E9E, // neutral grey default
-      );
-      await db.insertCategory(newCategory);
-      ref.invalidate(categoriesProvider);
-      setState(() {
-        _selectedCategory = newCategory;
-      });
-    }
+    final db = ref.read(supabaseServiceProvider);
+    await db.insertCategory(result);
+    ref.invalidate(categoriesProvider);
+    setState(() {
+      _selectedCategory = result;
+    });
   }
 
   Future<void> _showEditCategoryDialog() async {
     if (_selectedCategory == null) return;
-    final textController = TextEditingController(text: _selectedCategory!.name);
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Category'),
-          content: TextField(
-            controller: textController,
-            decoration: const InputDecoration(hintText: 'Category Name'),
-            autofocus: true,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () =>
-                  Navigator.of(context).pop(textController.text.trim()),
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
+    final result = await showCategoryEditorDialog(
+      context,
+      existing: _selectedCategory,
     );
+    if (result == null) return;
 
-    if (result != null &&
-        result.isNotEmpty &&
-        result != _selectedCategory!.name) {
-      final db = ref.read(supabaseServiceProvider);
-      final updatedCategory = Category(
-        id: _selectedCategory!.id,
-        name: result,
-        iconCode: _selectedCategory!.iconCode,
-        colorCode: _selectedCategory!.colorCode,
-      );
-      await db.updateCategory(updatedCategory);
-      ref.invalidate(categoriesProvider);
-      ref.invalidate(costsProvider);
-      setState(() {
-        _selectedCategory = updatedCategory;
-      });
-    }
+    final db = ref.read(supabaseServiceProvider);
+    await db.updateCategory(result);
+    ref.invalidate(categoriesProvider);
+    ref.invalidate(costsProvider);
+    setState(() {
+      _selectedCategory = result;
+    });
   }
 
   @override
@@ -419,7 +360,26 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
                             items: categories.map((cat) {
                               return DropdownMenuItem(
                                 value: cat,
-                                child: Text(cat.name),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: BoxDecoration(
+                                        color: Color(cat.colorCode),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        iconForCode(cat.iconCode),
+                                        color: Colors.white,
+                                        size: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(cat.name),
+                                  ],
+                                ),
                               );
                             }).toList(),
                             onChanged: (val) {

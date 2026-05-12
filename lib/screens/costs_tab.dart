@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:personal_accounting/models/cost.dart';
 import 'package:personal_accounting/services/database_service.dart';
 import 'package:personal_accounting/services/supabase_service.dart';
+import 'package:personal_accounting/utils/category_icons.dart';
 import 'package:personal_accounting/widgets/add_cost_dialog.dart';
 
 class CostsTab extends ConsumerWidget {
@@ -42,22 +43,6 @@ class CostItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Map iconcode back to IconData, for now just returning a default if not found
-    IconData getIcon(String code) {
-      switch (code) {
-        case 'shopping_cart':
-          return Icons.shopping_cart;
-        case 'directions_car':
-          return Icons.directions_car;
-        case 'movie':
-          return Icons.movie;
-        case 'receipt':
-          return Icons.receipt;
-        default:
-          return Icons.label;
-      }
-    }
-
     final currencyFormatter = NumberFormat.currency(symbol: '\$');
     final dateFormatter = DateFormat.yMMMd();
 
@@ -89,7 +74,10 @@ class CostItem extends ConsumerWidget {
           contentPadding: const EdgeInsets.all(16),
           leading: CircleAvatar(
             backgroundColor: Color(cost.category.colorCode),
-            child: Icon(getIcon(cost.category.iconCode), color: Colors.white),
+            child: Icon(
+              iconForCode(cost.category.iconCode),
+              color: Colors.white,
+            ),
           ),
           title: Text(
             cost.merchant.name,
