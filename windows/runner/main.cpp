@@ -5,6 +5,15 @@
 #include "flutter_window.h"
 #include "utils.h"
 
+// NOTE: single-instance forwarding for the `personalaccounting://` magic
+// link is intentionally NOT wired here. The `app_links` plugin exposes a
+// C-API helper for that, but its exact symbol name differs between
+// versions (`PushArgumentsToInstance` / `SendAppLinkToInstance` / etc.),
+// so we keep main.cpp dependency-free and let `getInitialLink()` on the
+// Dart side catch the URL on cold-start. The downside is a second app
+// window if the app is already open when you click the link — it'll
+// still sign you in correctly; you just close the first window.
+
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
   // Attach to console when present (e.g., 'flutter run') or create a

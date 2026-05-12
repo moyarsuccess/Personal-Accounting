@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personal_accounting/models/category.dart';
 import 'package:personal_accounting/models/cost.dart';
 import 'package:personal_accounting/models/merchant.dart';
+import 'package:personal_accounting/services/supabase_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -226,20 +227,53 @@ class DatabaseService {
     final database = await db;
     await database.delete('costs', where: 'id = ?', whereArgs: [id]);
   }
+
+  // Bulk insert helpers used by backup restore.
+  Future<void> insertCategoriesBatch(List<Category> categories) async {
+    final database = await db;
+    final batch = database.batch();
+    for (final c in categories) {
+      batch.insert(
+        'categories',
+        c.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> insertMerchantsBatch(List<Merchant> merchants) async {
+    final database = await db;
+    final batch = database.batch();
+    for (final m in merchants) {
+      batch.insert(
+        'merchants',
+        m.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+  }
 }
 
 final databaseServiceProvider = Provider<DatabaseService>((ref) {
   return DatabaseService();
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Data providers — wired to Supabase as of the cloud migration.
+// The local `databaseServiceProvider` above stays available exclusively for
+// the one-time local-to-cloud migration helper. All UI reads/writes go cloud.
+// ─────────────────────────────────────────────────────────────────────────────
+
 final categoriesProvider = FutureProvider<List<Category>>((ref) {
-  return ref.watch(databaseServiceProvider).getCategories();
+  return ref.watch(supabaseServiceProvider).getCategories();
 });
 
 final merchantsProvider = FutureProvider<List<Merchant>>((ref) {
-  return ref.watch(databaseServiceProvider).getMerchants();
+  return ref.watch(supabaseServiceProvider).getMerchants();
 });
 
 final costsProvider = FutureProvider<List<Cost>>((ref) {
-  return ref.watch(databaseServiceProvider).getCosts();
+  return ref.watch(supabaseServiceProvider).getCosts();
 });

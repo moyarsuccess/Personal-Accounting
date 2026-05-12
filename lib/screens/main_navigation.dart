@@ -21,8 +21,10 @@ class _MainNavigationState extends State<MainNavigation> {
       body: Stack(
         children: [
           IndexedStack(index: _currentIndex, children: _tabs),
-          if (_currentIndex == 0)
-            const Positioned(right: 16, bottom: 16, child: ImportQfxButton()),
+          // FAB is always available (Sign out / Migrate / Backup are useful
+          // from any tab; the per-tab actions like Add Cost still work from
+          // here too).
+          const Positioned(right: 16, bottom: 16, child: ImportQfxButton()),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

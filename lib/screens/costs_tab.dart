@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:personal_accounting/models/cost.dart';
 import 'package:personal_accounting/services/database_service.dart';
+import 'package:personal_accounting/services/supabase_service.dart';
 import 'package:personal_accounting/widgets/add_cost_dialog.dart';
 
 class CostsTab extends ConsumerWidget {
@@ -121,7 +122,7 @@ class CostItem extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.grey),
                 onPressed: () async {
-                  final db = ref.read(databaseServiceProvider);
+                  final db = ref.read(supabaseServiceProvider);
                   await db.deleteCost(cost.id);
                   ref.invalidate(costsProvider);
                 },

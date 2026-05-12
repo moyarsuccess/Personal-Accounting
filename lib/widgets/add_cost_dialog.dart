@@ -5,6 +5,7 @@ import 'package:personal_accounting/models/category.dart';
 import 'package:personal_accounting/models/cost.dart';
 import 'package:personal_accounting/models/merchant.dart';
 import 'package:personal_accounting/services/database_service.dart';
+import 'package:personal_accounting/services/supabase_service.dart';
 import 'package:uuid/uuid.dart';
 
 class AddCostDialog extends ConsumerStatefulWidget {
@@ -57,7 +58,7 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
 
     final double amount = double.parse(_amountController.text);
 
-    final db = ref.read(databaseServiceProvider);
+    final db = ref.read(supabaseServiceProvider);
 
     final newCost = Cost(
       id: widget.existingCost?.id ?? const Uuid().v4(),
@@ -121,7 +122,7 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
     );
 
     if (result != null && result.isNotEmpty) {
-      final db = ref.read(databaseServiceProvider);
+      final db = ref.read(supabaseServiceProvider);
       // Check if it already exists to avoid duplicates
       Merchant? existingMerchant = await db.getMerchantByName(result);
       if (existingMerchant == null) {
@@ -170,7 +171,7 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
     if (result != null &&
         result.isNotEmpty &&
         result != _selectedMerchant!.name) {
-      final db = ref.read(databaseServiceProvider);
+      final db = ref.read(supabaseServiceProvider);
       Merchant? existingMerchant = await db.getMerchantByName(result);
       if (existingMerchant == null) {
         final updatedMerchant = Merchant(
@@ -221,7 +222,7 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
     );
 
     if (result != null && result.isNotEmpty) {
-      final db = ref.read(databaseServiceProvider);
+      final db = ref.read(supabaseServiceProvider);
       final newCategory = Category(
         id: const Uuid().v4(),
         name: result,
@@ -267,7 +268,7 @@ class _AddCostDialogState extends ConsumerState<AddCostDialog> {
     if (result != null &&
         result.isNotEmpty &&
         result != _selectedCategory!.name) {
-      final db = ref.read(databaseServiceProvider);
+      final db = ref.read(supabaseServiceProvider);
       final updatedCategory = Category(
         id: _selectedCategory!.id,
         name: result,

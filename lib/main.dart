@@ -3,11 +3,14 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:personal_accounting/screens/main_navigation.dart';
+import 'package:personal_accounting/config/supabase_config.dart';
+import 'package:personal_accounting/screens/auth_gate.dart';
+import 'package:personal_accounting/services/deeplink_service.dart';
 import 'package:personal_accounting/theme/app_theme.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // sqflite has no native implementation on Windows/Linux — wire up the FFI
@@ -16,6 +19,15 @@ void main() {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
+
+  await Supabase.initialize(
+    url: SupabaseConfig.url,
+    anonKey: SupabaseConfig.publishableKey,
+  );
+
+  // Must run AFTER Supabase.initialize — the deeplink handler calls
+  // `exchangeCodeForSession` on the Supabase client.
+  await DeeplinkService.instance.init();
 
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -30,7 +42,7 @@ class MyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      home: const MainNavigation(),
+      home: const AuthGate(),
     );
   }
 }
